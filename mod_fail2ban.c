@@ -19,16 +19,13 @@ static switch_status_t mod_fail2ban_do_config(void);
 static void event_handler(switch_event_t *event)
 {
 
-	if (event->event_id == SWITCH_EVENT_CHANNEL_CREATE) {
-		switch_file_printf(logfile, "event Channel create was called\n");
-
-	} else if (event->event_id == SWITCH_EVENT_CHANNEL_ANSWER) { 
+	if (event->event_id == MY_EVENT_REGISTER_ATTEMPT) {
+		switch_file_printf(logfile, "A registration was atempted\n");
+	} else if (event->event_id == REG_STATE_FAILED) { 
 		switch_file_printf(logfile, "event answer was called\n");
-
-	} else if (event->event_id == SWITCH_EVENT_CHANNEL_APPLICATION) { 
-		switch_file_printf(logfile, "event application was called\n");
-
 	}
+	switch_file_printf(logfile, "%s: %s\n", "User", switch_event_get_header(event, "username"));
+	switch_file_printf(logfile, "%s: %s\n", "IP", switch_event_get_header(event, "network-ip"));
 }
 
 // SWITCH_DECLARE(int) switch_file_printf(switch_file_t *thefile, const char *format, ...);
@@ -115,7 +112,8 @@ static switch_status_t mod_fail2ban_do_config(void)
 	if ((status = switch_file_open(&logfile, logfile_name, SWITCH_FOPEN_WRITE, SWITCH_FPROT_UWRITE, modpool)) != SWITCH_STATUS_SUCCESS) {
 		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "failed to open %s\n", logfile_name);		
 		return SWITCH_STATUS_FALSE;
-	}
+	} 
+	switch_file_printf(logfile, " Fail2bban was started\n");
 	
  done:
 	switch_xml_free(xml);
