@@ -1,5 +1,7 @@
 #include <switch.h>
 
+#define MY_EVENT_REGISTER_ATTEMPT "sofia::register_attempt"
+
 SWITCH_MODULE_SHUTDOWN_FUNCTION(mod_fail2ban_shutdown);
 SWITCH_MODULE_LOAD_FUNCTION(mod_fail2ban_load);
 
@@ -11,18 +13,18 @@ SWITCH_MODULE_DEFINITION(mod_fail2ban, mod_fail2ban_load, mod_fail2ban_shutdown,
 switch_memory_pool_t *modpool;
 char *logfile_name = "/usr/local/freeswitch/log/fail2ban.log";
 switch_file_t *logfile;
-switch_event_types_t event = SWITCH_EVENT_ALL;
+switch_event_types_t event = SWITCH_EVENT_CUSTOM;
 const char *subclass_name = SWITCH_EVENT_SUBCLASS_ANY;
 
 static switch_status_t mod_fail2ban_do_config(void);
 
 static void event_handler(switch_event_t *event)
 {
-	if (event->event_id == SWITCH_EVENT_CUSTOM && strncmp(event->subclass_name, "sofia::register_attempt",23) == 0) {
+	if (strncmp(event->subclass_name, "sofia::register_attempt",23) == 0) {
 		switch_file_printf(logfile, "A registration was atempted\n");
 		switch_file_printf(logfile, "%s: %s\n", "User", switch_event_get_header(event, "to-user"));
 		switch_file_printf(logfile, "%s: %s\n", "IP", switch_event_get_header(event, "network-ip"));
-	} else if (event->event_id == SWITCH_EVENT_CUSTOM && strncmp(event->subclass_name, "sofia::register_failure",23) == 0) {
+	} else if (strncmp(event->subclass_name, "sofia::register_failure",23) == 0) {
 		switch_file_printf(logfile, "A registration failed\n");
 		switch_file_printf(logfile, "%s: %s\n", "User", switch_event_get_header(event, "to-user"));
 		switch_file_printf(logfile, "%s: %s\n", "IP", switch_event_get_header(event, "network-ip"));
