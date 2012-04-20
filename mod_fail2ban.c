@@ -1,7 +1,5 @@
 #include <switch.h>
 
-#define MY_EVENT_REGISTER_ATTEMPT "sofia::register_attempt"
-
 SWITCH_MODULE_SHUTDOWN_FUNCTION(mod_fail2ban_shutdown);
 SWITCH_MODULE_LOAD_FUNCTION(mod_fail2ban_load);
 
