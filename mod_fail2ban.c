@@ -1,7 +1,5 @@
 #include <switch.h>
 
-#define MY_EVENT_REGISTER_ATTEMPT "sofia::register_attempt"
-
 SWITCH_MODULE_SHUTDOWN_FUNCTION(mod_fail2ban_shutdown);
 SWITCH_MODULE_LOAD_FUNCTION(mod_fail2ban_load);
 
@@ -18,16 +16,18 @@ const char *subclass_name = SWITCH_EVENT_SUBCLASS_ANY;
 
 static switch_status_t mod_fail2ban_do_config(void);
 
-static void event_handler(switch_event_t *event)
+static void fail2ban_event_handler(switch_event_t *event)
 {
-	if (strncmp(event->subclass_name, "sofia::register_attempt",23) == 0) {
-		switch_file_printf(logfile, "A registration was atempted\n");
-		switch_file_printf(logfile, "%s: %s\n", "User", switch_event_get_header(event, "to-user"));
-		switch_file_printf(logfile, "%s: %s\n", "IP", switch_event_get_header(event, "network-ip"));
-	} else if (strncmp(event->subclass_name, "sofia::register_failure",23) == 0) {
-		switch_file_printf(logfile, "A registration failed\n");
-		switch_file_printf(logfile, "%s: %s\n", "User", switch_event_get_header(event, "to-user"));
-		switch_file_printf(logfile, "%s: %s\n", "IP", switch_event_get_header(event, "network-ip"));
+	if (event->event_id == SWITCH_EVENT_CUSTOM && strncmp(event->subclass_name, "sofia::register_attempt",23) == 0) {
+		switch_file_printf(logfile, "A registration was atempted ");
+		switch_file_printf(logfile, "%s:%s ", "User", switch_event_get_header(event, "to-user"));
+		switch_file_printf(logfile, "%s:%s ", "IP", switch_event_get_header(event, "network-ip"));
+		switch_file_printf(logfile, "\n");
+	} else if (event->event_id == SWITCH_EVENT_CUSTOM && strncmp(event->subclass_name, "sofia::register_failure",23) == 0) {
+		switch_file_printf(logfile, "A registration failed ");
+		switch_file_printf(logfile, "%s:%s ", "User", switch_event_get_header(event, "to-user"));
+		switch_file_printf(logfile, "%s:%s ", "IP", switch_event_get_header(event, "network-ip"));
+		switch_file_printf(logfile, "\n");
 	}
 
 }
@@ -42,7 +42,7 @@ SWITCH_MODULE_LOAD_FUNCTION(mod_fail2ban_load)
 	*module_interface = switch_loadable_module_create_module_interface(pool, modname);
 	modpool = pool;
 
-	if ((status = switch_event_bind(modname, event, subclass_name, event_handler, user_data)) != SWITCH_STATUS_SUCCESS) {
+	if ((status = switch_event_bind(modname, event, subclass_name, fail2ban_event_handler, user_data)) != SWITCH_STATUS_SUCCESS) {
 		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_NOTICE, "event bind failed\n");
 		return SWITCH_STATUS_FALSE;
 	} 
@@ -52,6 +52,8 @@ SWITCH_MODULE_LOAD_FUNCTION(mod_fail2ban_load)
 		return SWITCH_STATUS_FALSE;
 	}
 
+	switch_file_printf(logfile, "Fail2ban was started\n");
+	
 	return SWITCH_STATUS_SUCCESS;
 }
 
@@ -62,7 +64,7 @@ SWITCH_MODULE_SHUTDOWN_FUNCTION(mod_fail2ban_shutdown)
 {
 	switch_status_t status;
 
-	if ((status = switch_event_unbind_callback(event_handler)) != SWITCH_STATUS_SUCCESS) {
+	if ((status = switch_event_unbind_callback(fail2ban_event_handler)) != SWITCH_STATUS_SUCCESS) {
 		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_NOTICE, "event bind failed\n");
 		return status;
 	}
@@ -120,8 +122,7 @@ static switch_status_t mod_fail2ban_do_config(void)
 		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "failed to open %s\n", logfile_name);		
 		return SWITCH_STATUS_FALSE;
 	} 
-	switch_file_printf(logfile, " Fail2bban was started\n");
-	
+
  done:
 	switch_xml_free(xml);
 	
