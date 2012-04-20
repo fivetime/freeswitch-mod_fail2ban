@@ -1,5 +1,7 @@
 #include <switch.h>
 
+#define MY_EVENT_REGISTER_ATTEMPT "sofia::register_attempt"
+
 SWITCH_MODULE_SHUTDOWN_FUNCTION(mod_fail2ban_shutdown);
 SWITCH_MODULE_LOAD_FUNCTION(mod_fail2ban_load);
 
@@ -18,14 +20,16 @@ static switch_status_t mod_fail2ban_do_config(void);
 
 static void event_handler(switch_event_t *event)
 {
-
-	if (event->event_id == MY_EVENT_REGISTER_ATTEMPT) {
+	if (event->event_id == SWITCH_EVENT_CUSTOM && strncmp(event->subclass_name, "sofia::register_attempt",23) == 0) {
 		switch_file_printf(logfile, "A registration was atempted\n");
-	} else if (event->event_id == REG_STATE_FAILED) { 
-		switch_file_printf(logfile, "event answer was called\n");
+		switch_file_printf(logfile, "%s: %s\n", "User", switch_event_get_header(event, "to-user"));
+		switch_file_printf(logfile, "%s: %s\n", "IP", switch_event_get_header(event, "network-ip"));
+	} else if (event->event_id == SWITCH_EVENT_CUSTOM && strncmp(event->subclass_name, "sofia::register_failure",23) == 0) {
+		switch_file_printf(logfile, "A registration failed\n");
+		switch_file_printf(logfile, "%s: %s\n", "User", switch_event_get_header(event, "to-user"));
+		switch_file_printf(logfile, "%s: %s\n", "IP", switch_event_get_header(event, "network-ip"));
 	}
-	switch_file_printf(logfile, "%s: %s\n", "User", switch_event_get_header(event, "username"));
-	switch_file_printf(logfile, "%s: %s\n", "IP", switch_event_get_header(event, "network-ip"));
+
 }
 
 // SWITCH_DECLARE(int) switch_file_printf(switch_file_t *thefile, const char *format, ...);
@@ -41,9 +45,8 @@ SWITCH_MODULE_LOAD_FUNCTION(mod_fail2ban_load)
 	if ((status = switch_event_bind(modname, event, subclass_name, event_handler, user_data)) != SWITCH_STATUS_SUCCESS) {
 		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_NOTICE, "event bind failed\n");
 		return SWITCH_STATUS_FALSE;
-	} else {
-		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_NOTICE, "event bind success\n");
-	}
+	} 
+	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_NOTICE, "event bind success\n");
 
 	if (mod_fail2ban_do_config() != SWITCH_STATUS_SUCCESS) {
 		return SWITCH_STATUS_FALSE;
@@ -57,17 +60,21 @@ SWITCH_MODULE_LOAD_FUNCTION(mod_fail2ban_load)
   Macro expands to: switch_status_t mod_fail2ban_shutdown() */
 SWITCH_MODULE_SHUTDOWN_FUNCTION(mod_fail2ban_shutdown)
 {
-	void *user_data = NULL;
 	switch_status_t status;
-	switch_event_node_t *node;
 
-	if ((status = switch_event_bind_removable(modname, event, subclass_name, event_handler, user_data, &node)) != SWITCH_STATUS_SUCCESS) {
+	if ((status = switch_event_unbind_callback(event_handler)) != SWITCH_STATUS_SUCCESS) {
 		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_NOTICE, "event bind failed\n");
-		return SWITCH_STATUS_SUCCESS;
-	} else {
-		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_NOTICE, "event bind success\n");
-		return SWITCH_STATUS_FALSE;
+		return status;
 	}
+	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_NOTICE, "event bind removed\n");
+
+	if ((status = switch_file_close(logfile)) != SWITCH_STATUS_SUCCESS) {
+		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "failed to close %s\n", logfile_name);		
+		return status;
+	} 
+	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_NOTICE, "successfully closed %s\n", logfile_name);
+	
+	return status;
 }
 
 static switch_status_t mod_fail2ban_do_config(void)
@@ -79,7 +86,7 @@ static switch_status_t mod_fail2ban_do_config(void)
 	char *var;
 	char *val;
 	
-	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "setting configs\n");		
+	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_NOTICE, "setting configs\n");		
 
 	if (!(xml = switch_xml_open_cfg(cf, &cfg, NULL))) {
 		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Open of %s failed\n", cf);
@@ -93,7 +100,7 @@ static switch_status_t mod_fail2ban_do_config(void)
 	
 	for (config = switch_xml_child(bindings_tag, "config"); config; config = config->next) {
 		bname = (char *) switch_xml_attr_soft(config, "name");
-		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "bname: %s\n",bname);		
+		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_NOTICE, "bname: %s\n",bname);		
 		
 		for (param = switch_xml_child(config, "param"); param; param = param->next) {
 			var = (char *) switch_xml_attr_soft(param, "name");
@@ -108,7 +115,7 @@ static switch_status_t mod_fail2ban_do_config(void)
 		}	
 	}
 	
-	
+		
 	if ((status = switch_file_open(&logfile, logfile_name, SWITCH_FOPEN_WRITE, SWITCH_FPROT_UWRITE, modpool)) != SWITCH_STATUS_SUCCESS) {
 		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "failed to open %s\n", logfile_name);		
 		return SWITCH_STATUS_FALSE;
