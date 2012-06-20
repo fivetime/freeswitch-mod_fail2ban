@@ -64,6 +64,7 @@ SWITCH_MODULE_SHUTDOWN_FUNCTION(mod_fail2ban_shutdown)
 {
 	switch_status_t status;
 
+	switch_file_printf(logfile, "Fail2ban stoping\n");
 	if ((status = switch_event_unbind_callback(fail2ban_event_handler)) != SWITCH_STATUS_SUCCESS) {
 		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_NOTICE, "event bind failed\n");
 		return status;
@@ -118,7 +119,7 @@ static switch_status_t mod_fail2ban_do_config(void)
 	}
 	
 		
-	if ((status = switch_file_open(&logfile, logfile_name, SWITCH_FOPEN_WRITE, SWITCH_FPROT_UWRITE, modpool)) != SWITCH_STATUS_SUCCESS) {
+	if ((status = switch_file_open(&logfile, logfile_name, SWITCH_FOPEN_WRITE|SWITCH_FOPEN_APPEND|SWITCH_FOPEN_CREATE, SWITCH_FPROT_UWRITE, modpool)) != SWITCH_STATUS_SUCCESS) {
 		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "failed to open %s\n", logfile_name);		
 		return SWITCH_STATUS_FALSE;
 	} 
