@@ -1,4 +1,5 @@
 #include <switch.h>
+#include <time.h>
 
 SWITCH_MODULE_SHUTDOWN_FUNCTION(mod_fail2ban_shutdown);
 SWITCH_MODULE_LOAD_FUNCTION(mod_fail2ban_load);
@@ -18,17 +19,23 @@ static switch_status_t mod_fail2ban_do_config(void);
 
 static void fail2ban_event_handler(switch_event_t *event)
 {
-	if (event->event_id == SWITCH_EVENT_CUSTOM && strncmp(event->subclass_name, "sofia::register_attempt",23) == 0) {
-		switch_file_printf(logfile, "A registration was atempted ");
-		switch_file_printf(logfile, "%s:%s ", "User", switch_event_get_header(event, "to-user"));
-		switch_file_printf(logfile, "%s:%s ", "IP", switch_event_get_header(event, "network-ip"));
-		switch_file_printf(logfile, "\n");
-	} else if (event->event_id == SWITCH_EVENT_CUSTOM && strncmp(event->subclass_name, "sofia::register_failure",23) == 0) {
-		switch_file_printf(logfile, "A registration failed ");
-		switch_file_printf(logfile, "%s:%s ", "User", switch_event_get_header(event, "to-user"));
-		switch_file_printf(logfile, "%s:%s ", "IP", switch_event_get_header(event, "network-ip"));
-		switch_file_printf(logfile, "\n");
-	}
+	time_t rawtime;
+	struct tm * timeinfo;
+
+	time(&rawtime);
+	timeinfo = localtime(&rawtime);
+
+        if (event->event_id == SWITCH_EVENT_CUSTOM && strncmp(event->subclass_name, "sofia::register_attempt",23) == 0) {
+                switch_file_printf(logfile, "A registration was atempted ");
+                switch_file_printf(logfile, "%s:%s ", "User", switch_event_get_header(event, "to-user"));
+                switch_file_printf(logfile, "%s:%s at ", "IP", switch_event_get_header(event, "network-ip"));
+                switch_file_printf(logfile, asctime(timeinfo));
+        } else if (event->event_id == SWITCH_EVENT_CUSTOM && strncmp(event->subclass_name, "sofia::register_failure",23) == 0) {
+                switch_file_printf(logfile, "A registration failed ");
+                switch_file_printf(logfile, "%s:%s ", "User", switch_event_get_header(event, "to-user"));
+                switch_file_printf(logfile, "%s:%s at ", "IP", switch_event_get_header(event, "network-ip"));
+                switch_file_printf(logfile, asctime(timeinfo));
+        }
 
 }
 
