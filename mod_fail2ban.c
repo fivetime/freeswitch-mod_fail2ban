@@ -35,6 +35,11 @@ static void fail2ban_event_handler(switch_event_t *event)
                 switch_file_printf(logfile, "%s:%s ", "User", switch_event_get_header(event, "to-user"));
                 switch_file_printf(logfile, "%s:%s at ", "IP", switch_event_get_header(event, "network-ip"));
                 switch_file_printf(logfile, asctime(timeinfo));
+        } else if (strncmp(event->subclass_name, "sofia::pre_register",19) == 0) {
+                switch_file_printf(logfile, "A preregistration was atempted ");
+                switch_file_printf(logfile, "%s:%s ", "User", switch_event_get_header(event, "to-user"));
+                switch_file_printf(logfile, "%s:%s at ", "IP", switch_event_get_header(event, "network-ip"));
+                switch_file_printf(logfile, asctime(timeinfo));
         }
 
 }
