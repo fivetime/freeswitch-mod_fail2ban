@@ -26,20 +26,20 @@ static void fail2ban_event_handler(switch_event_t *event)
 	timeinfo = localtime(&rawtime);
 
         if (event->event_id == SWITCH_EVENT_CUSTOM && strncmp(event->subclass_name, "sofia::register_attempt",23) == 0) {
-                switch_file_printf(logfile, "A registration was atempted ");
-                switch_file_printf(logfile, "%s:%s ", "User", switch_event_get_header(event, "to-user"));
-                switch_file_printf(logfile, "%s:%s at ", "IP", switch_event_get_header(event, "network-ip"));
                 switch_file_printf(logfile, asctime(timeinfo));
+                switch_file_printf(logfile, " A registration was atempted ");
+                switch_file_printf(logfile, "%s:%s ", "User", switch_event_get_header(event, "to-user"));
+                switch_file_printf(logfile, "%s:%s", "IP", switch_event_get_header(event, "network-ip"));
         } else if (event->event_id == SWITCH_EVENT_CUSTOM && strncmp(event->subclass_name, "sofia::register_failure",23) == 0) {
-                switch_file_printf(logfile, "A registration failed ");
-                switch_file_printf(logfile, "%s:%s ", "User", switch_event_get_header(event, "to-user"));
-                switch_file_printf(logfile, "%s:%s at ", "IP", switch_event_get_header(event, "network-ip"));
                 switch_file_printf(logfile, asctime(timeinfo));
+                switch_file_printf(logfile, " A registration failed ");
+                switch_file_printf(logfile, "%s:%s ", "User", switch_event_get_header(event, "to-user"));
+                switch_file_printf(logfile, "%s:%s", "IP", switch_event_get_header(event, "network-ip"));
         } else if (strncmp(event->subclass_name, "sofia::pre_register",19) == 0) {
-                switch_file_printf(logfile, "A preregistration was atempted ");
-                switch_file_printf(logfile, "%s:%s ", "User", switch_event_get_header(event, "to-user"));
-                switch_file_printf(logfile, "%s:%s at ", "IP", switch_event_get_header(event, "network-ip"));
                 switch_file_printf(logfile, asctime(timeinfo));
+                switch_file_printf(logfile, " A preregistration was atempted ");
+                switch_file_printf(logfile, "%s:%s ", "User", switch_event_get_header(event, "to-user"));
+                switch_file_printf(logfile, "%s:%s", "IP", switch_event_get_header(event, "network-ip"));
         }
 
 }
