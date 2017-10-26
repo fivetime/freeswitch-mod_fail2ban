@@ -29,7 +29,7 @@ static void fail2ban_event_handler(switch_event_t *event)
         if (event->event_id == SWITCH_EVENT_CUSTOM && strncmp(event->subclass_name, "sofia::register_attempt",23) == 0) {
                 strftime (buffer,25,"%FT%T%z",timeinfo);
                 switch_file_printf(logfile, "%s", buffer);
-                switch_file_printf(logfile, " A registration was atempted ");
+                switch_file_printf(logfile, " A registration was attempted ");
                 switch_file_printf(logfile, "%s:%s ", "User", switch_event_get_header(event, "to-user"));
                 switch_file_printf(logfile, "%s:%s", "IP", switch_event_get_header(event, "network-ip"));
                 switch_file_printf(logfile, "\n");
@@ -43,7 +43,7 @@ static void fail2ban_event_handler(switch_event_t *event)
         } else if (strncmp(event->subclass_name, "sofia::pre_register",19) == 0) {
                 strftime (buffer,25,"%FT%T%z",timeinfo);
                 switch_file_printf(logfile, "%s", buffer);
-                switch_file_printf(logfile, " A preregistration was atempted ");
+                switch_file_printf(logfile, " A preregistration was attempted ");
                 switch_file_printf(logfile, "%s:%s ", "User", switch_event_get_header(event, "to-user"));
                 switch_file_printf(logfile, "%s:%s", "IP", switch_event_get_header(event, "network-ip"));
                 switch_file_printf(logfile, "\n");
@@ -83,7 +83,7 @@ SWITCH_MODULE_SHUTDOWN_FUNCTION(mod_fail2ban_shutdown)
 {
 	switch_status_t status;
 
-	switch_file_printf(logfile, "Fail2ban stoping\n");
+	switch_file_printf(logfile, "Fail2ban stopping\n");
 	if ((status = switch_event_unbind_callback(fail2ban_event_handler)) != SWITCH_STATUS_SUCCESS) {
 		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_NOTICE, "event bind failed\n");
 		return status;
