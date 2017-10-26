@@ -80,15 +80,15 @@ An example of how we can test the regex on the command line
 
 `tail /usr/local/freeswitch/log/fail2ban.log`
 ```
-2016-08-10T17:57:54-0400 A registration was atempted User:1001 IP:50.149.72.66
+2016-08-10T17:57:54-0400 A registration was attempted User:1001 IP:50.149.72.66
 2016-08-10T17:57:54-0400 A registration failed User:1001 IP:50.149.72.66
-2016-08-10T17:57:54-0400 A registration was atempted User:1002 IP:50.149.72.66
+2016-08-10T17:57:54-0400 A registration was attempted User:1002 IP:50.149.72.66
 2016-08-10T17:57:54-0400 A registration failed User:1002 IP:50.149.72.66
-2016-08-10T17:58:03-0400 A preregistration was atempted User:1002 IP:50.149.72.66
-2016-08-10T17:58:03-0400 A registration was atempted User:1002 IP:50.149.72.66
+2016-08-10T17:58:03-0400 A preregistration was attempted User:1002 IP:50.149.72.66
+2016-08-10T17:58:03-0400 A registration was attempted User:1002 IP:50.149.72.66
 2016-08-10T17:58:03-0400 A registration failed User:1002 IP:50.149.72.66
-2016-08-10T17:58:08-0400 A preregistration was atempted User:1001 IP:50.149.72.66
-2016-08-10T17:58:08-0400 A registration was atempted User:1001 IP:50.149.72.66
+2016-08-10T17:58:08-0400 A preregistration was attempted User:1001 IP:50.149.72.66
+2016-08-10T17:58:08-0400 A registration was attempted User:1001 IP:50.149.72.66
 2016-08-10T17:58:08-0400 A registration failed User:1001 IP:50.149.72.66
 ```
 
