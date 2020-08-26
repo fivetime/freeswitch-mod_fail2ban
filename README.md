@@ -5,7 +5,7 @@ FreeSWITCH module for fail2ban
 
 `cd /usr/local/src/freeswitch/src/mod/applications`
 
-`git clone https://github.com/kurtabersold/freeswitch-mod_fail2ban.git mod_fail2ban`
+`git clone https://github.com/fivetime/freeswitch-mod_fail2ban.git mod_fail2ban`
 
 `cd mod_fail2ban`
 
